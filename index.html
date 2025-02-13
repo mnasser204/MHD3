@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نموذج تقييم التدريب</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #f3f4f6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #ffb700;
+            color: black;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .note {
+            background-color: #fff;
+            border: 1px solid #ffb700;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            text-align: center;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .question {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        .question.correct {
+            background-color: #d1fae5;
+            border-color: #059669;
+        }
+
+        .question.incorrect {
+            background-color: #fee2e2;
+            border-color: #dc2626;
+        }
+
+        .options {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .options label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .options input {
+            margin-left: 8px;
+        }
+
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            border: 2px solid #ffb700;
+            border-radius: 4px;
+            display: none;
+        }
+
+        button {
+            background: #ffb700;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #f59e0b;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .answer-feedback {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .download-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>نموذج تقييم التدريب</h1>
+        </div>
+        <div class="content">
+            <div class="note">
+                <p>بعض المحاور تتطلب اختيار أكثر من إجابة واحدة</p>
+            </div>
+            <div class="form-group">
+                <label for="name">اسم الموظف:</label>
+                <input type="text" id="name" required>
+            </div>
+
+            <form id="evaluationForm">
+                <!-- سيتم إضافة الأسئلة هنا بواسطة JavaScript -->
+            </form>
+
+            <div id="results" class="results">
+                <h3>نتائج التقييم</h3>
+                <div id="resultsContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                id: 1,
+                title: 'التعلم الرسمي في بيئة الفصل الدراسي',
+                subtitle: 'Formal learning in classroom setting',
+                correctAnswer: ['10'],
+                multipleAnswers: true
+            },
+            {
+                id: 2,
+                title: 'التعلم غير الرسمي',
+                subtitle: 'Informal Learning',
+                correctAnswer: ['70', '20', '10'],
+                multipleAnswers: true
+            },
+            {
+                id: 3,
+                title: 'التعلم التجريبي',
+                subtitle: 'Experiential Learning',
+                correctAnswer: ['70'],
+                multipleAnswers: true
+            },
+            {
+                id: 4,
+                title: 'الكوتشنج',
+                subtitle: 'Coaching',
+                correctAnswer: ['20'],
+                multipleAnswers: true
+            },
+            {
+                id: 5,
+                title: 'التوجيه',
+                subtitle: 'Mentoring',
+                correctAnswer: ['20'],
+                multipleAnswers: true
+            },
+            {
+                id: 6,
+                title: 'بناء المهارات',
+                subtitle: 'Skill Building',
+                correctAnswer: ['70', '20', '10'],
+                multipleAnswers: true
+            },
+            {
+                id: 7,
+                title: 'التدريب المستهدف',
+                subtitle: 'Targeted Training',
+                correctAnswer: ['10'],
+                multipleAnswers: true
+            },
+            {
+                id: 8,
+                title: 'التدريب على وظائف أخرى',
+                subtitle: 'Cross-Training',
+                correctAnswer: ['70'],
+                multipleAnswers: true
+            },
+            {
+                id: 9,
+                title: 'التدريب عن بعد',
+                subtitle: 'Remote Training',
+                correctAnswer: ['10'],
+                multipleAnswers: true
+            },
+            {
+                id: 10,
+                title: 'تدريب الموظفين الجدد',
+                subtitle: 'New Employee Training',
+                correctAnswer: ['70', '20', '10'],
+                multipleAnswers: true
+            }
+        ];
+
+        const options = [
+            { value: '70', label: '70%' },
+            { value: '20', label: '20%' },
+            { value: '10', label: '10%' }
+        ];
+
+        function createQuestions() {
+            const form = document.getElementById('evaluationForm');
+            questions.forEach(q => {
+                const div = document.createElement('div');
+                div.className = 'question';
+                div.id = `question-${q.id}`;
+                div.innerHTML = `
+                    <h3>${q.id}. ${q.title}</h3>
+                    <p class="subtitle">${q.subtitle}</p>
+                    <div class="options">
+                        ${options.map(opt => `
+                            <label>
+                                <input type="checkbox" name="q${q.id}" value="${opt.value}">
+                                <span>${opt.label}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div class="answer-feedback" id="feedback-${q.id}"></div>
+                `;
+                form.appendChild(div);
+            });
+
+            const submitDiv = document.createElement('div');
+            submitDiv.className = 'form-group';
+            submitDiv.innerHTML = `<button type="submit">إرسال التقييم</button>`;
+            form.appendChild(submitDiv);
+        }
+
+        function arraysEqual(a, b) {
+            if (a === b) return true;
+            if (a == null || b == null) return false;
+            if (a.length !== b.length) return false;
+            return a.sort().every((val, index) => val === b.sort()[index]);
+        }
+
+        function evaluateAnswers(event) {
+            event.preventDefault();
+            const name = document.getElementById('name').value;
+            if (!name) {
+                alert('الرجاء إدخال اسم الموظف');
+                return;
+            }
+
+            let correctCount = 0;
+            const answers = {};
+
+            questions.forEach(q => {
+                const selectedInputs = document.querySelectorAll(`input[name="q${q.id}"]:checked`);
+                const selectedValues = Array.from(selectedInputs).map(input => input.value);
+                
+                answers[q.id] = selectedValues;
+
+                if (arraysEqual(selectedValues, q.correctAnswer)) {
+                    correctCount++;
+                }
+
+                const questionDiv = document.getElementById(`question-${q.id}`);
+                const feedbackDiv = document.getElementById(`feedback-${q.id}`);
+                
+                const allOptions = questionDiv.querySelectorAll('.options label');
+                allOptions.forEach(label => {
+                    const input = label.querySelector('input');
+                    const span = label.querySelector('span');
+                    
+                    span.style.color = 'black';
+                    span.style.fontWeight = 'normal';
+                    
+                    if (selectedValues.includes(input.value) && !q.correctAnswer.includes(input.value)) {
+                        span.style.color = '#dc2626';
+                        span.style.fontWeight = 'bold';
+                    }
+                    
+                    if (q.correctAnswer.includes(input.value)) {
+                        span.style.color = '#059669';
+                        span.style.fontWeight = 'bold';
+                    }
+                });
+
+                if (arraysEqual(selectedValues, q.correctAnswer)) {
+                    questionDiv.className = 'question correct';
+                    feedbackDiv.innerHTML = '✓ إجابة صحيحة';
+                    feedbackDiv.style.color = '#059669';
+                } else {
+                    questionDiv.className = 'question incorrect';
+                    feedbackDiv.innerHTML = '✗ إجابة خاطئة';
+                    feedbackDiv.style.color = '#dc2626';
+                }
+            });
+
+            const score = (correctCount / questions.length) * 100;
+            showResults(name, correctCount, score, answers);
+        }
+
+        function showResults(name, correctCount, score, answers) {
+            const resultsDiv = document.getElementById('results');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            resultsContent.innerHTML = `
+                <p>اسم الموظف: <strong>${name}</strong></p>
+                <p>عدد الإجابات الصحيحة: <strong style="color: #059669;">${correctCount} من ${questions.length}</strong></p>
+                <p>النسبة المئوية: <strong style="color: #f59e0b;">${score.toFixed(1)}%</strong></p>
+                <button class="download-btn" onclick="downloadExcel('${name}', ${correctCount}, ${score}, ${JSON.stringify(answers).replace(/"/g, "'")})">
+                    ⬇️ تحميل النتائج (Excel)
+                </button>
+            `;
+            
+            resultsDiv.style.display = 'block';
+            
+            document.querySelectorAll('input').forEach(input => {
+                input.disabled = true;
+            });
+        }
+
+        function downloadExcel(name, correctCount, score, answers) {
+            const data = [
+                ['نموذج تقييم التدريب'],
+                [''],
+                ['اسم الموظف', name],
+                ['تاريخ التقييم', new Date().toLocaleDateString('ar-SA')],
+                [''],
+                ['رقم السؤال', 'السؤال', 'السؤال بالإنجليزية', 'إجابة المستخدم', 'الإجابة الصحيحة', 'النتيجة']
+            ];
+
+            questions.forEach(q => {
+                data.push([
+                    q.id,
+                    q.title,
+                    q.subtitle,
+                    answers[q.id].map(ans => `${ans}%`).join(', '),
+                    q.correctAnswer.map(ans => `${ans}%`).join(', '),
+                    arraysEqual(answers[q.id], q.correctAnswer) ? 'صحيحة ✓' : 'خاطئة ✗'
+                ]);
+            });
+
+            data.push(
+                [''],
+                ['ملخص النتائج'],
+                ['عدد الإجابات الصحيحة', `${correctCount} من ${questions.length}`],
+                ['النسبة المئوية', `${score.toFixed(1)}%`]
+            );
+
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            
+            ws['!cols'] = [
+                { wch: 10 },
+                { wch: 40 },
+                { wch: 40 },
+                { wch: 15 },
+                { wch: 15 },
+                { wch: 12 }
+            ];
+
+            ws['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }
+            ];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'نتائج التقييم');
+            XLSX.writeFile(wb, `نتائج_تقييم_${name}.xlsx`);
+        }
+
+        createQuestions();
+        document.getElementById('evaluationForm').addEventListener('submit', evaluateAnswers);
+    </script>
+</body>
+</html>
